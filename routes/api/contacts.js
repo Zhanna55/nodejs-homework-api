@@ -5,15 +5,9 @@ const contacts = require('../../models/contacts');
 const { HttpError } = require('../../helpers');
 
 const validateSchema = Joi.object({
-  name: Joi.string().required().messages({
-    'any.required': `"name" is required`,
-  }),
-  email: Joi.string().required().messages({
-    'any.required': `"email" is required`,
-  }),
-  phone: Joi.string().required().messages({
-    'any.required': `"phone" is required`,
-  }),
+  name: Joi.string().required(),
+  email: Joi.string().required(),
+  phone: Joi.string().required(),
 });
 router.get('/', async (req, res, next) => {
   try {
@@ -41,13 +35,13 @@ router.post('/', async (req, res, next) => {
   try {
     const { error } = validateSchema.validate(req.body);
     if (error) {
-      throw HttpError(400, error.message);
+      throw HttpError(400, 'Missing required name field');
     }
     const result = await contacts.addContact(req.body);
     if (!result) {
       throw HttpError(400, 'Contact with this number is exist');
     }
-    res.json(result);
+    res.status(201).json(result);
   } catch (error) {
     next(error);
   }
