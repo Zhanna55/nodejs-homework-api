@@ -1,8 +1,6 @@
-// const contacts = require('../models/contacts');
-// const validateSchema = require('../schemas/validateSchema');
-const { HttpError } = require('../helpers');
 const { Contact } = require('../models/contact');
-const ctrlWrapper = require('../utils/ctrlWrapper');
+const { ctrlWrapper } = require('../utils');
+const { HttpError } = require('../helpers');
 
 const listContacts = async (req, res) => {
   const result = await Contact.find();
@@ -12,20 +10,15 @@ const listContacts = async (req, res) => {
 const getContactById = async (req, res) => {
   const { id } = req.params;
   const result = await Contact.findById(id);
+
   if (!result) {
     throw HttpError(404, `Contact with ${id} not found`);
   }
   res.json(result);
 };
+
 const addContact = async (req, res) => {
-  // const { error } = validateSchema.validate(req.body);
-  // if (error) {
-  //   throw HttpError(400, 'Missing required name field');
-  // }
   const result = await Contact.create(req.body);
-  if (!result) {
-    throw HttpError(400, 'Contact with this number is exist');
-  }
   res.status(201).json(result);
 };
 
@@ -48,6 +41,7 @@ const updateContact = async (req, res) => {
   }
   res.json(result);
 };
+
 const updateStatusContact = async (req, res) => {
   const { id } = req.params;
   const result = await Contact.findByIdAndUpdate(id, req.body, { new: true });
@@ -56,6 +50,7 @@ const updateStatusContact = async (req, res) => {
   }
   res.json(result);
 };
+
 module.exports = {
   listContacts: ctrlWrapper(listContacts),
   getContactById: ctrlWrapper(getContactById),
