@@ -8,6 +8,7 @@ const {
   updateSubscriptionSchema,
 } = require('../../utils/validationSchemas/userValidationSchema');
 const authenticate = require('../../middlewares/authenticate');
+const upload = require('../../middlewares/upload');
 
 router.post('/register', validateBody(registerSchema), ctrl.register);
 router.post('/login', validateBody(loginSchema), ctrl.login);
@@ -18,5 +19,11 @@ router.patch(
   authenticate,
   validateBody(updateSubscriptionSchema),
   ctrl.updateSubscription
+);
+router.patch(
+  '/avatars',
+  authenticate,
+  upload.single('avatar'),
+  ctrl.updateAvatar
 );
 module.exports = router;
