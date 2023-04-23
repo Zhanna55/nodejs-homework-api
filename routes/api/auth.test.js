@@ -1,37 +1,24 @@
 const mongoose = require('mongoose');
 const request = require('supertest');
-const jwt = require('jsonwebtoken');
+const bcrypt = require('bcrypt');
 const app = require('../../app');
 const User = require('../../models/user');
 
-const { DB_HOST_TEST, PORT, SECRET_KEY } = process.env;
-const userOneId = new mongoose.Types.ObjectId();
-const userOne = {
-  _id: userOneId,
-  email: 'test@mail.com',
-  password: '12345',
-  // token: jwt.sign({ _id: userOneId }, SECRET_KEY),
-};
+const { DB_HOST_TEST, PORT } = process.env;
 
-describe('test /api/users/login route', () => {
+describe('test /api/users/ routes', () => {
   let server = null;
+
   beforeAll(async () => {
     server = app.listen(PORT);
     await mongoose.connect(DB_HOST_TEST);
   });
 
   afterAll(async () => {
+    await User.deleteMany({});
     server.close();
     await mongoose.connection.close();
   });
-
-  beforeEach(async () => {
-    await User.deleteMany({});
-    const user = new User(userOne);
-    await user.save();
-  });
-
-  afterEach(async () => {});
 
   test('test register route with correct data', async () => {
     const registerData = {
@@ -55,13 +42,19 @@ describe('test /api/users/login route', () => {
       email: 'test@mail.com',
       password: '12345',
     };
+
+    const hashPassword = await bcrypt.hash(loginData.password, 10);
+    const testUser = {
+      email: loginData.email,
+      password: hashPassword,
+    };
+    await new User(testUser).save();
+
     const res = await request(app).post('/api/users/login').send(loginData);
 
     expect(res.statusCode).toBe(200);
     expect(res.body.token).toBeDefined();
-    expect(res.body.email).toBe(loginData.email);
-    expect(res.body.subscription).toBeDefined();
-    const user = await User.findOne({ email: loginData.email });
-    expect(res.body.email).toBe(loginData.email);
+    expect(res.body.user.email).toBe(loginData.email);
+    expect(res.body.user.subscription).toBeDefined();
   });
 });
